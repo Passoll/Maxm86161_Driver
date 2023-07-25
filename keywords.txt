@@ -1,0 +1,26 @@
+#######################################
+# Syntax Coloring Map For Arduino_mamx86161
+####################################### 
+# Class
+#######################################
+
+mamx86161	KEYWORD1
+VIEW_DEBUG_SAMPLE	KEYWORD1
+
+#######################################
+# Methods and Functions 
+#######################################	
+
+begin	KEYWORD2
+end	KEYWORD2
+
+hrm_get_heart_rate	KEYWORD2
+hrm_get_spo2	KEYWORD2
+hrm_get_status	KEYWORD2
+hrm_loop	KEYWORD2
+hrm_init	KEYWORD2
+
+
+#######################################
+# Constants
+#######################################
