@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Wire.h"
+#include "hrm_helper.h"
+#include "maxm86161_spo2.h"
 
 #define HRM_DEMO_NAME "AYSE_HRM Demo"
 #define HRM_DEMO_VERSION "1.0.0"
@@ -19,6 +21,12 @@ class Maxm86161_hrm_system
 private:
    /* data */
 public:
+   maxm_hrm_handle_t *hrmHandle;
+   /** Data Storage memory bock required by the maxm86161 hrm algorithm */
+   mamx86161_hrm_data_storage_t hrm_data_storage;
+   maxm86161_spo2_data_storage_t spo2_data;
+   maxm86161_data_storage_t data_storage;
+
    Maxm86161_hrm_system(){};
    ~Maxm86161_hrm_system(){};
 

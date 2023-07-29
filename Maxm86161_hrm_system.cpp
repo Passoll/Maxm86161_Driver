@@ -1,6 +1,4 @@
 #include "Maxm86161_hrm_system.h"
-#include "hrm_helper.h"
-#include "maxm86161_spo2.h"
 
 /**************************************************************************//**
  * Local defines
@@ -10,12 +8,7 @@
  * Global variables
  *****************************************************************************/
 /** Sensor handle for the maxm86161 hrm algorithm */
- 
- maxm_hrm_handle_t *hrmHandle;
- /** Data Storage memory bock required by the maxm86161 hrm algorithm */
- mamx86161_hrm_data_storage_t hrm_data_storage;
- maxm86161_spo2_data_storage_t spo2_data;
- maxm86161_data_storage_t data_storage;
+
 
 /** Heart Rate result from the si117xhrm algorithm */
 static int16_t heart_rate;

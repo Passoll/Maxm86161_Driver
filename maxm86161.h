@@ -262,6 +262,55 @@ typedef struct maxm86161_device_config
   maxm86161_ledpa_t ledpa_cfg;
   maxm86161_ppg_cfg_t ppg_cfg;
   maxm86161_int_t int_cfg;
+
+  maxm86161_device_config() {
+    int_level = 15;
+    ledsq_cfg = {
+#if (PROX_SELECTION & PROX_USE_IR)
+        0x02,//LED2 - IR
+        0x01,//LED1 - green
+        0x03,//LED3 - RED
+#elif (PROX_SELECTION & PROX_USE_RED)
+        0x03,//LED3 - RED
+        0x02,//LED2 - IR
+        0x01,//LED1 - green
+#else // default use GREEN
+        0x01,//LED1 - green
+        0x02,//LED2 - IR
+        0x03,//LED3 - RED
+#endif
+        0x00,
+        0x00,
+        0x00,
+    };
+    ledpa_cfg = {
+        0x05,// green
+        0x05,// IR
+        0x05,// LED
+    };
+    ppg_cfg = {
+        MAXM86161_PPG_CFG_ALC_DS,
+        MAXM86161_PPG_CFG_OFFSET_NO,
+        MAXM86161_PPG_CFG_TINT_117p3_US,
+        MAXM86161_PPG_CFG_LED_RANGE_16k,
+        MAXM86161_PPG_CFG_SMP_RATE_P1_24sps,
+        MAXM86161_PPG_CFG_SMP_AVG_1
+    };
+    int_cfg = {
+        MAXM86161_INT_ENABLE,//full_fifo
+        MAXM86161_INT_DISABLE,//data_rdy
+        MAXM86161_INT_DISABLE,//alc_ovf
+#ifdef PROXIMITY
+        MAXM86161_INT_ENABLE,//proximity
+#else
+        MAXM86161_INT_DISABLE,
+#endif
+        MAXM86161_INT_DISABLE,//led_compliant
+        MAXM86161_INT_DISABLE,//die_temp
+        MAXM86161_INT_DISABLE,//pwr_rdy
+        MAXM86161_INT_DISABLE//sha
+    };
+  }
 } maxm86161_device_config_t;
 
 /***************************************************************************//**

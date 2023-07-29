@@ -66,55 +66,6 @@ static int32_t maxm86161_hrm_identify_part(uint8_t *part_id);
 /**************************************************************************//**
  * Global Variables and Constants
  *****************************************************************************/
-static maxm86161_device_config_t default_maxim_config = {
-    15,//interrupt level
-    {
-#if (PROX_SELECTION & PROX_USE_IR)
-        0x02,//LED2 - IR
-        0x01,//LED1 - green
-        0x03,//LED3 - RED
-#elif (PROX_SELECTION & PROX_USE_RED)
-        0x03,//LED3 - RED
-        0x02,//LED2 - IR
-        0x01,//LED1 - green
-#else // default use GREEN
-        0x01,//LED1 - green
-        0x02,//LED2 - IR
-        0x03,//LED3 - RED
-#endif
-        0x00,
-        0x00,
-        0x00,
-    },
-    {
-        0x05,// green
-        0x05,// IR
-        0x05,// LED
-    },
-    {
-        MAXM86161_PPG_CFG_ALC_DS,
-        MAXM86161_PPG_CFG_OFFSET_NO,
-        MAXM86161_PPG_CFG_TINT_117p3_US,
-        MAXM86161_PPG_CFG_LED_RANGE_16k,
-        MAXM86161_PPG_CFG_SMP_RATE_P1_24sps,
-        MAXM86161_PPG_CFG_SMP_AVG_1
-    },
-    {
-        MAXM86161_INT_ENABLE,//full_fifo
-        MAXM86161_INT_DISABLE,//data_rdy
-        MAXM86161_INT_DISABLE,//alc_ovf
-#ifdef PROXIMITY
-        MAXM86161_INT_ENABLE,//proximity
-#else
-        MAXM86161_INT_DISABLE,
-#endif
-        MAXM86161_INT_DISABLE,//led_compliant
-        MAXM86161_INT_DISABLE,//die_temp
-        MAXM86161_INT_DISABLE,//pwr_rdy
-        MAXM86161_INT_DISABLE//sha
-    }
-};
-
 static const int16_t hrm_interpolator_coefs_r4[] = {  // In Q15. R=4, L=4, Alpha=0.5
          //0x0000, 0x0000, 0x0000, 0x7FFF, 0x0000, 0x0000, 0x0000, 0x0000,
          0xFF56, 0x03FE, 0xF061, 0x6F86, 0x253F, 0xF4C6, 0x034D, 0xFF6B,
@@ -317,7 +268,7 @@ int32_t maxm86161_hrm_configure(maxm_hrm_handle_t *handle,
   handle->spo2_ir_ps_select = 1;
   handle->spo2_red_ps_select = 2;
   if(device_config == NULL)
-    device_config = &default_maxim_config;
+    device_config = new maxm86161_device_config_t();
   handle->device_config = device_config;
   handle->measurement_rate = FS_25HZ;
   handle->timestamp_clock_freq = 8192;
