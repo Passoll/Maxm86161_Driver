@@ -9,22 +9,7 @@
  *****************************************************************************/
 /** Sensor handle for the maxm86161 hrm algorithm */
 
-
-/** Heart Rate result from the si117xhrm algorithm */
-static int16_t heart_rate;
-
-/** SpO2 result from the si117xhrm algorithm */
-static int16_t spo2;
-
-static int32_t hrm_status = 0;
-
 //static bool update_display = false;
-static bool hrm_contac_status = false;
-
-mamx86161_hrm_data_t hrm_data;
-
-/** Flag used to indicate HRM/SpO2 state */
-static volatile hrm_spo2_state_t hrm_spo2_state = HRM_STATE_IDLE;
 
 /**************************************************************************//**
  * Local prototypes
@@ -41,7 +26,7 @@ int32_t Maxm86161_hrm_system::hrm_init(void)
   data_storage.spo2 = &spo2_data;
   data_storage.hrm = &hrm_data_storage;
   ////check the data id
-  int err = maxm86161_hrm_initialize(&data_storage, &hrmHandle);
+  int err = maxm86161_hrm_initialize(&data_storage, &hrmHandle, &hrm_helper);
 
   if(err == MAXM86161_HRM_ERROR_INVALID_PART_ID ){
     Serial.println('No MAXM86161 is detected!');
@@ -88,7 +73,7 @@ void Maxm86161_hrm_system::hrm_loop_process(void)
                               &spo2,
                               1,
                               &num_samples_processed,
-                              &hrm_status, &hrm_data);
+                              &hrm_status, &hrm_data, &hrm_helper);
   
   switch (hrm_spo2_state) {
     case HRM_STATE_IDLE:
@@ -101,7 +86,7 @@ void Maxm86161_hrm_system::hrm_loop_process(void)
         hrm_status &= ~MAXM86161_HRM_STATUS_FRAME_PROCESSED;
 
 #if (UART_DEBUG & HRM_LEVEL)
-        hrm_helper_output_debug_message(heart_rate, spo2);
+        hrm_helper.hrm_helper_output_debug_message(heart_rate, spo2);
 #endif
 
         //update_display = true;
@@ -111,7 +96,7 @@ void Maxm86161_hrm_system::hrm_loop_process(void)
     else if ((hrm_status & MAXM86161_HRM_STATUS_FINGER_OFF)
         || (hrm_status & MAXM86161_HRM_STATUS_SPO2_FINGER_OFF)
         || (hrm_status & MAXM86161_HRM_STATUS_ZERO_CROSSING_INVALID)
-        || (maxm86161_get_prox_mode())) {
+        || (hrm_helper.maxm86161_get_prox_mode())) {
 #else
     else if ((hrm_status & MAXM86161_HRM_STATUS_FINGER_OFF)
         || (hrm_status & MAXM86161_HRM_STATUS_SPO2_FINGER_OFF)

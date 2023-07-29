@@ -52,7 +52,7 @@ static int32_t maxm86161_hrm_frame_process(maxm_hrm_handle_t *handle,
                                            mamx86161_hrm_data_t *hrm_data);
 static int32_t maxm86161_hrm_init_measurement_parameters(maxm_hrm_handle_t *handle,
                                                          int16_t measurement_rate);
-static int32_t maxm86161_hrm_get_sample(maxm86161_hrm_irq_sample_t *samples);
+static int32_t maxm86161_hrm_get_sample(maxm86161_hrm_irq_sample_t *samples, maxm86161_hrm_helper *helper);
 static int32_t maxm86161_hrm_sample_process(maxm_hrm_handle_t *handle, uint32_t hrm_ps,
                                             uint32_t SpO2_PS_RED,
                                             uint32_t SpO2_PS_IR,
@@ -362,6 +362,9 @@ int32_t maxm86161_hrm_process_external_sample(maxm_hrm_handle_t *handle,
  *  Optional pointer to a maxm86161hrmData_t structure where this function will return
  *  auxiliary data useful for the application.  If the application is not
  *  interested in this data it may pass NULL to this parameter.
+ * 
+ * @param[in] helper
+ * Pointer to maxm86161hrm helper
  *
  * @return
  *  Returns error status.
@@ -372,7 +375,8 @@ int32_t maxm86161_hrm_process(maxm_hrm_handle_t *handle,
                               int16_t numSamples,
                               int16_t *numSamplesProcessed,
                               int32_t *hrm_status,
-                              mamx86161_hrm_data_t *hrm_data)
+                              mamx86161_hrm_data_t *hrm_data,
+                              void *helper)
 {
   int32_t error = MAXM86161_HRM_SUCCESS;
   maxm86161_hrm_irq_sample_t samples;
@@ -380,15 +384,15 @@ int32_t maxm86161_hrm_process(maxm_hrm_handle_t *handle,
 
   for (i = 0; i < numSamples; i++) {
     //Ayse
-    maxm86161_hrm_helper_process_irq();
+    ((maxm86161_hrm_helper*)helper)->maxm86161_hrm_helper_process_irq();
     
-    error = maxm86161_hrm_get_sample(&samples);
+    error = maxm86161_hrm_get_sample(&samples, (maxm86161_hrm_helper*)helper);
 
     if(error != MAXM86161_HRM_SUCCESS)
       goto Error;
 
 #if(VIEW_DEBUG_SAMPLE) 
-    hrm_helper_output_raw_sample_debug_message(&samples);
+    ((maxm86161_hrm_helper*)helper)->hrm_helper_output_raw_sample_debug_message(&samples);
 #endif
 
     if (handle->hrm_dc_sensing_flag == HRM_DC_SENSING_START
@@ -449,11 +453,14 @@ Error:
  *
  * @param[in] handle
  *  Pointer to maxm86161hrm handle
+ * 
+ * @param[in] helper
+ * Pointer to maxm86161hrm helper
  *
  * @return
  *  Returns error status.
  *****************************************************************************/
-int32_t maxm86161_hrm_initialize(maxm86161_data_storage_t *data, maxm_hrm_handle_t **handle)
+int32_t maxm86161_hrm_initialize(maxm86161_data_storage_t *data, maxm_hrm_handle_t **handle, void *helper)
 {
   int32_t err = MAXM86161_HRM_SUCCESS;
   maxm_hrm_handle_t *_handle;
@@ -471,7 +478,7 @@ int32_t maxm86161_hrm_initialize(maxm86161_data_storage_t *data, maxm_hrm_handle
   _handle->spo2 = (maxm86161_spo2_handle_t *)malloc(sizeof(maxm86161_spo2_handle_t));
 #endif
 
-  maxm86161_hrm_helper_initialize();
+  ((maxm86161_hrm_helper*)helper)->maxm86161_hrm_helper_initialize();
 
   (*handle) = (maxm_hrm_handle_t *)_handle;
 
@@ -1351,10 +1358,10 @@ Error:
 /**************************************************************************//**
  * @brief Get maxm86161 sample from the sample queue
  *****************************************************************************/
-static int32_t maxm86161_hrm_get_sample(maxm86161_hrm_irq_sample_t *samples)
+static int32_t maxm86161_hrm_get_sample(maxm86161_hrm_irq_sample_t *samples, maxm86161_hrm_helper *helper)
 {
   int32_t error = MAXM86161_HRM_SUCCESS;
-  error = maxm86161_hrm_helper_sample_queue_get(samples);
+  error = helper->maxm86161_hrm_helper_sample_queue_get(samples);
   return error;
 }
 
