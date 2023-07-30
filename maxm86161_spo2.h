@@ -393,7 +393,7 @@ typedef struct maxm86161_data_storage
  * @return
  *  Returns error status.
  *****************************************************************************/
-int32_t maxm86161_hrm_initialize(maxm86161_data_storage_t *data, maxm_hrm_handle_t **handle);
+int32_t maxm86161_hrm_initialize(maxm86161_data_storage_t *data, maxm_hrm_handle_t **handle, void *helper);
 
 /**************************************************************************//**
  * @brief
@@ -528,7 +528,8 @@ int32_t maxm86161_hrm_process(maxm_hrm_handle_t *handle,
                               int16_t numSamples,
                               int16_t *numSamplesProcessed,
                               int32_t *hrmStatus,
-                              mamx86161_hrm_data_t *hrmData);
+                              mamx86161_hrm_data_t *hrmData,
+                              void *helper);
 
 /**************************************************************************//**
  * @brief

@@ -30,16 +30,17 @@
 *******************************************************************************/
 
 #include "hrm_helper.h"
-#include "maxm86161.h"
 
-maxm86161_fifo_queue_t ppg_queue;
-maxm86161_ppg_sample_t maxm86161_irq_queue[APP_QUEUE_SIZE];
-static bool maxm86161_prox_mode = false;
+
+maxm86161_hrm_helper::maxm86161_hrm_helper()
+{
+  maxm86161_prox_mode = false;
+}
 
 /**************************************************************************//**
  * @brief Empty the samples in queue.
  *****************************************************************************/
-void maxm86161_helper_sample_queue_clear(void)
+void maxm86161_hrm_helper::maxm86161_helper_sample_queue_clear(void)
 {
   maxm86161_clear_queue(&ppg_queue);
 }
@@ -47,7 +48,7 @@ void maxm86161_helper_sample_queue_clear(void)
 /**************************************************************************//**
  * @brief Query number of entries in the queue.
  *****************************************************************************/
-int32_t maxm86161_hrm_helper_sample_queue_numentries(void)
+int32_t maxm86161_hrm_helper::maxm86161_hrm_helper_sample_queue_numentries(void)
 {
   int16_t count=0;
 
@@ -58,7 +59,7 @@ int32_t maxm86161_hrm_helper_sample_queue_numentries(void)
 /**************************************************************************//**
  * @brief Get sample from the queue.
  *****************************************************************************/
-int32_t maxm86161_hrm_helper_sample_queue_get(maxm86161_hrm_irq_sample_t *samples)
+int32_t maxm86161_hrm_helper::maxm86161_hrm_helper_sample_queue_get(maxm86161_hrm_irq_sample_t *samples)
 {
 
   int ret = MAXM86161_HRM_SUCCESS;
@@ -82,7 +83,7 @@ Error:
 /**************************************************************************//**
  * @brief Initialize and clear the queue.
  *****************************************************************************/
-int32_t maxm86161_hrm_helper_initialize(void)
+int32_t maxm86161_hrm_helper::maxm86161_hrm_helper_initialize(void)
 {
   int16_t error = 0;
   maxm86161_allocate_ppg_data_queue(&ppg_queue,
@@ -96,7 +97,7 @@ int32_t maxm86161_hrm_helper_initialize(void)
  * @brief Main interrupt processing routine for MAX86161.
  *****************************************************************************/
 #ifdef PROXIMITY
-void maxm86161_hrm_helper_process_irq(void)
+void maxm86161_hrm_helper::maxm86161_hrm_helper_process_irq(void)
 {
   uint8_t reg_status;
   uint8_t ppg_sr_status;
@@ -117,7 +118,7 @@ void maxm86161_hrm_helper_process_irq(void)
   }
 }
 #else
-void maxm86161_hrm_helper_process_irq(void)
+void maxm86161_hrm_helper::maxm86161_hrm_helper_process_irq(void)
 {
   uint8_t reg_status;
 
@@ -132,7 +133,7 @@ void maxm86161_hrm_helper_process_irq(void)
  * @brief Use to check maxm86161 in proximity mode or normal mode
  *****************************************************************************/
 #ifdef PROXIMITY
-bool maxm86161_get_prox_mode(void)
+bool maxm86161_hrm_helper::maxm86161_get_prox_mode(void)
 {
   return maxm86161_prox_mode;
 }
@@ -141,7 +142,7 @@ bool maxm86161_get_prox_mode(void)
 /**************************************************************************//**
  * @brief Prints heart rate and spo2 to USB debug interface
  *****************************************************************************/
-void hrm_helper_output_debug_message(int16_t heart_rate, int16_t spo2)
+void maxm86161_hrm_helper::hrm_helper_output_debug_message(int16_t heart_rate, int16_t spo2)
 {
     char output[100];
     sprintf(output, "Heart rate = %dbpm, SpO2 = %d%%\n", heart_rate, spo2);
@@ -151,7 +152,7 @@ void hrm_helper_output_debug_message(int16_t heart_rate, int16_t spo2)
 /**************************************************************************//**
  * @brief Prints samples to USB debug interface
  *****************************************************************************/
-void hrm_helper_output_raw_sample_debug_message(maxm86161_hrm_irq_sample_t *sample)
+void maxm86161_hrm_helper::hrm_helper_output_raw_sample_debug_message(maxm86161_hrm_irq_sample_t *sample)
 {
     Serial.print(sample->ppg[0]);
     Serial.print(",");

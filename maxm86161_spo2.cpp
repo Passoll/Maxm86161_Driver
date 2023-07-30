@@ -52,7 +52,7 @@ static int32_t maxm86161_hrm_frame_process(maxm_hrm_handle_t *handle,
                                            mamx86161_hrm_data_t *hrm_data);
 static int32_t maxm86161_hrm_init_measurement_parameters(maxm_hrm_handle_t *handle,
                                                          int16_t measurement_rate);
-static int32_t maxm86161_hrm_get_sample(maxm86161_hrm_irq_sample_t *samples);
+static int32_t maxm86161_hrm_get_sample(maxm86161_hrm_irq_sample_t *samples, maxm86161_hrm_helper *helper);
 static int32_t maxm86161_hrm_sample_process(maxm_hrm_handle_t *handle, uint32_t hrm_ps,
                                             uint32_t SpO2_PS_RED,
                                             uint32_t SpO2_PS_IR,
@@ -66,55 +66,6 @@ static int32_t maxm86161_hrm_identify_part(uint8_t *part_id);
 /**************************************************************************//**
  * Global Variables and Constants
  *****************************************************************************/
-static maxm86161_device_config_t default_maxim_config = {
-    15,//interrupt level
-    {
-#if (PROX_SELECTION & PROX_USE_IR)
-        0x02,//LED2 - IR
-        0x01,//LED1 - green
-        0x03,//LED3 - RED
-#elif (PROX_SELECTION & PROX_USE_RED)
-        0x03,//LED3 - RED
-        0x02,//LED2 - IR
-        0x01,//LED1 - green
-#else // default use GREEN
-        0x01,//LED1 - green
-        0x02,//LED2 - IR
-        0x03,//LED3 - RED
-#endif
-        0x00,
-        0x00,
-        0x00,
-    },
-    {
-        0x05,// green
-        0x05,// IR
-        0x05,// LED
-    },
-    {
-        MAXM86161_PPG_CFG_ALC_DS,
-        MAXM86161_PPG_CFG_OFFSET_NO,
-        MAXM86161_PPG_CFG_TINT_117p3_US,
-        MAXM86161_PPG_CFG_LED_RANGE_16k,
-        MAXM86161_PPG_CFG_SMP_RATE_P1_24sps,
-        MAXM86161_PPG_CFG_SMP_AVG_1
-    },
-    {
-        MAXM86161_INT_ENABLE,//full_fifo
-        MAXM86161_INT_DISABLE,//data_rdy
-        MAXM86161_INT_DISABLE,//alc_ovf
-#ifdef PROXIMITY
-        MAXM86161_INT_ENABLE,//proximity
-#else
-        MAXM86161_INT_DISABLE,
-#endif
-        MAXM86161_INT_DISABLE,//led_compliant
-        MAXM86161_INT_DISABLE,//die_temp
-        MAXM86161_INT_DISABLE,//pwr_rdy
-        MAXM86161_INT_DISABLE//sha
-    }
-};
-
 static const int16_t hrm_interpolator_coefs_r4[] = {  // In Q15. R=4, L=4, Alpha=0.5
          //0x0000, 0x0000, 0x0000, 0x7FFF, 0x0000, 0x0000, 0x0000, 0x0000,
          0xFF56, 0x03FE, 0xF061, 0x6F86, 0x253F, 0xF4C6, 0x034D, 0xFF6B,
@@ -317,7 +268,7 @@ int32_t maxm86161_hrm_configure(maxm_hrm_handle_t *handle,
   handle->spo2_ir_ps_select = 1;
   handle->spo2_red_ps_select = 2;
   if(device_config == NULL)
-    device_config = &default_maxim_config;
+    device_config = new maxm86161_device_config_t();
   handle->device_config = device_config;
   handle->measurement_rate = FS_25HZ;
   handle->timestamp_clock_freq = 8192;
@@ -411,6 +362,9 @@ int32_t maxm86161_hrm_process_external_sample(maxm_hrm_handle_t *handle,
  *  Optional pointer to a maxm86161hrmData_t structure where this function will return
  *  auxiliary data useful for the application.  If the application is not
  *  interested in this data it may pass NULL to this parameter.
+ * 
+ * @param[in] helper
+ * Pointer to maxm86161hrm helper
  *
  * @return
  *  Returns error status.
@@ -421,7 +375,8 @@ int32_t maxm86161_hrm_process(maxm_hrm_handle_t *handle,
                               int16_t numSamples,
                               int16_t *numSamplesProcessed,
                               int32_t *hrm_status,
-                              mamx86161_hrm_data_t *hrm_data)
+                              mamx86161_hrm_data_t *hrm_data,
+                              void *helper)
 {
   int32_t error = MAXM86161_HRM_SUCCESS;
   maxm86161_hrm_irq_sample_t samples;
@@ -429,15 +384,15 @@ int32_t maxm86161_hrm_process(maxm_hrm_handle_t *handle,
 
   for (i = 0; i < numSamples; i++) {
     //Ayse
-    maxm86161_hrm_helper_process_irq();
+    ((maxm86161_hrm_helper*)helper)->maxm86161_hrm_helper_process_irq();
     
-    error = maxm86161_hrm_get_sample(&samples);
+    error = maxm86161_hrm_get_sample(&samples, (maxm86161_hrm_helper*)helper);
 
     if(error != MAXM86161_HRM_SUCCESS)
       goto Error;
 
 #if(VIEW_DEBUG_SAMPLE) 
-    hrm_helper_output_raw_sample_debug_message(&samples);
+    ((maxm86161_hrm_helper*)helper)->hrm_helper_output_raw_sample_debug_message(&samples);
 #endif
 
     if (handle->hrm_dc_sensing_flag == HRM_DC_SENSING_START
@@ -498,11 +453,14 @@ Error:
  *
  * @param[in] handle
  *  Pointer to maxm86161hrm handle
+ * 
+ * @param[in] helper
+ * Pointer to maxm86161hrm helper
  *
  * @return
  *  Returns error status.
  *****************************************************************************/
-int32_t maxm86161_hrm_initialize(maxm86161_data_storage_t *data, maxm_hrm_handle_t **handle)
+int32_t maxm86161_hrm_initialize(maxm86161_data_storage_t *data, maxm_hrm_handle_t **handle, void *helper)
 {
   int32_t err = MAXM86161_HRM_SUCCESS;
   maxm_hrm_handle_t *_handle;
@@ -520,7 +478,7 @@ int32_t maxm86161_hrm_initialize(maxm86161_data_storage_t *data, maxm_hrm_handle
   _handle->spo2 = (maxm86161_spo2_handle_t *)malloc(sizeof(maxm86161_spo2_handle_t));
 #endif
 
-  maxm86161_hrm_helper_initialize();
+  ((maxm86161_hrm_helper*)helper)->maxm86161_hrm_helper_initialize();
 
   (*handle) = (maxm_hrm_handle_t *)_handle;
 
@@ -1400,10 +1358,10 @@ Error:
 /**************************************************************************//**
  * @brief Get maxm86161 sample from the sample queue
  *****************************************************************************/
-static int32_t maxm86161_hrm_get_sample(maxm86161_hrm_irq_sample_t *samples)
+static int32_t maxm86161_hrm_get_sample(maxm86161_hrm_irq_sample_t *samples, maxm86161_hrm_helper *helper)
 {
   int32_t error = MAXM86161_HRM_SUCCESS;
-  error = maxm86161_hrm_helper_sample_queue_get(samples);
+  error = helper->maxm86161_hrm_helper_sample_queue_get(samples);
   return error;
 }
 

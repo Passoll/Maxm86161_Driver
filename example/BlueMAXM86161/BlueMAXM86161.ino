@@ -1,5 +1,6 @@
 
 #include <Maxm86161_hrm_system.h>
+#include <Arduino.h>
 
 int storage_hr = 0;
 int storage_spo2 = 0;
