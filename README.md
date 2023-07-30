@@ -3,12 +3,12 @@ This code is for maxm86161 development in arduino/ESP32, a modified version for 
 
 ## Getting Started
 
-**hrm_init()** : Configure and initialize the device.\n
-**hrm_pause()** : Stop the device for now.\n
-**hrm_restart()** : Restart the device.\n
-**hrm_loop_process()** : This is process the data in the loop; Call every frame.\n
-**hrm_get_heart_rate()** : Get the heart rate.\n
-**hrm_get_spo2()** : Get the SPO2.\n
+**hrm_init()** : Configure and initialize the device./n
+**hrm_pause()** : Stop the device for now./n
+**hrm_restart()** : Restart the device./n
+**hrm_loop_process()** : This is process the data in the loop; Call every frame./n
+**hrm_get_heart_rate()** : Get the heart rate./n
+**hrm_get_spo2()** : Get the SPO2./n
 **hrm_get_status()** : Get the touch status.
 
 Config file 
