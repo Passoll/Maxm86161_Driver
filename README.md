@@ -22,8 +22,6 @@ VIEW_DEBUG_SAMPLE : Show each sample data;
 - SCL
 - SDA
 
-## Authors
-**Peixi Zhong** - *Modifications for Arduino*
 
 ## Reference
 SiliconLabs
