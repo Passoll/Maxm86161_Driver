@@ -1,5 +1,6 @@
 ## Summary
 This code is for maxm86161 development in arduino/ESP32, a modified version for the maxm86161 driver by siliconlabs https://github.com/SiliconLabs/platform_hardware_drivers/tree/master/bio_sensor_maxm86161. The original repo is on other platform, this repo tranfer the driver to ESP32 or arduino platform. Test on ESP32.
+![image](https://github.com/Passoll/Maxm86161_Driver/assets/25281954/518df049-8f55-42f3-8fc2-4e7bd419df5c)
 
 ## Getting Started
 
